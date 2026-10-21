@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로또 번호 생성기</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body {
+            font-family: 'Pretendard', sans-serif;
+        }
+        /* 번호 공 애니메이션 효과 */
+        .ball-pop {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-lg w-full bg-white rounded-2xl shadow-xl p-6 sm:p-8 space-y-6">
+        <!-- 헤더 영역 -->
+        <div class="text-center space-y-2">
+            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">
+                🎰 로또 번호 추천기
+            </h1>
+            <p class="text-slate-500 text-sm">
+                버튼을 눌러 행운의 5개 세트를 추천받으세요!
+            </p>
+        </div>
+
+        <!-- 번호 표시 영역 (5세트) -->
+        <div id="lotto-sets" class="space-y-3">
+            <!-- 자바스크립트로 세트들이 생성되어 들어갑니다 -->
+        </div>
+
+        <!-- 버튼 및 안내 -->
+        <div class="space-y-4 pt-2">
+            <button onclick="generateLottoNumbers()" 
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transition duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2 text-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                새로운 번호 생성하기
+            </button>
+
+            <!-- 색상 범례 (Guide) -->
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs text-slate-600 flex justify-between items-center px-4">
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span>1-10</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>11-20</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>21-30</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-slate-500 inline-block"></span>31-40</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>41-45</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 번호 구간에 따른 Tailwind 클래스 반환 (색상 스타일링)
+        function getBallColorClass(num) {
+            if (num <= 10) return 'bg-amber-400 text-slate-900 border-amber-300';
+            if (num <= 20) return 'bg-blue-500 text-white border-blue-400';
+            if (num <= 30) return 'bg-rose-500 text-white border-rose-400';
+            if (num <= 40) return 'bg-slate-500 text-white border-slate-400';
+            return 'bg-emerald-500 text-white border-emerald-400';
+        }
+
+        // 중복 없는 6개 로또 번호 생성 및 오름차순 정렬
+        function generateSingleSet() {
+            const numbers = new Set();
+            while (numbers.size < 6) {
+                const randomNum = Math.floor(Math.random() * 45) + 1;
+                numbers.add(randomNum);
+            }
+            return Array.from(numbers).sort((a, b) => a - b);
+        }
+
+        // 5개 세트 생성 및 화면 렌더링
+        function generateLottoNumbers() {
+            const container = document.getElementById('lotto-sets');
+            container.innerHTML = ''; // 기존 번호 초기화
+
+            const setLabels = ['A', 'B', 'C', 'D', 'E'];
+
+            setLabels.forEach((label, index) => {
+                const setNumbers = generateSingleSet();
+
+                // 세트 카드 생성
+                const setRow = document.createElement('div');
+                setRow.className = 'flex items-center justify-between bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100 shadow-sm';
+
+                // 세트 알파벳 라벨 (A, B, C, D, E)
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'text-xs font-bold text-slate-400 w-5 text-center';
+                labelSpan.innerText = label;
+
+                // 번호들을 담을 컨테이너
+                const ballsContainer = document.createElement('div');
+                ballsContainer.className = 'flex gap-1.5 sm:gap-2.5 justify-end flex-1 ml-2';
+
+                // 번호 공 생성
+                setNumbers.forEach((num, numIndex) => {
+                    const ball = document.createElement('div');
+                    const colorClass = getBallColorClass(num);
+
+                    ball.className = `w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm sm:text-base shadow-sm border ${colorClass} ball-pop`;
+                    // 등장 시차 애니메이션
+                    ball.style.animationDelay = `${(index * 6 + numIndex) * 0.02}s`;
+                    ball.innerText = num;
+
+                    ballsContainer.appendChild(ball);
+                });
+
+                setRow.appendChild(labelSpan);
+                setRow.appendChild(ballsContainer);
+                container.appendChild(setRow);
+            });
+        }
+
+        // 페이지 최초 로드시 자동으로 1회 생성
+        window.onload = function() {
+            generateLottoNumbers();
+        };
+    </script>
+</body>
+</html>
